@@ -1,0 +1,29 @@
+---
+title: "Dogecoin to the ground"
+subtitle: "A forecasting of the Dogecoin price "
+author: Siming Shan
+toc: TRUE
+abstract: 
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction:
+Elon Musk is known as one of the richest men in the world, and the CEO of the Tesla Motors. On March 14th, Elon Musk proposed to buy the whole twitter company with price of 43 billion dollars has brought him to the public attention again, however,as a matter of fact, Elon Musk has bought 9% stake of twitter and this news caused the twitter shares soared more than 20% []. It is not the first time Elon Musk has had a huge impact on the finance market, last year was a big year of crypto currency because Elon Musk greatly advertise a cryto currency that he bought - Dogecoin.
+
+Dogecoin is a open-source cryptocurrency created by Billy Markus and Jackson Palmer[]. The cryptocurrency is a digital or virtual currency which is secured by crypotography[]. In 2018, as Satoshi Nakamoto created the first cryptocurrency in the world - bitcoin, the concept of decentralized networks transaction has been more and more accepted and populated around the world. Nowasays, the crypotocurrency investment has become the first choice of many investors, because it is secure, decentralized, and stable.
+
+On Elon Musk twitter, he claimed that the "dogecoin is the people's crypto", and on May 10th 2021, he claimed that SpaceX will launch satellite called "Doge-1" to the moon, thus "Doge to the moon" has become a famous meme in the crypto currency area. As a matter of fact, the doge coin did actually soar up after Elon Musk's tweets. However, after the tide of dogecoin has passed, and Elon Musk decreased his frequency of tweeting about dogecoin, the price of dogecoin rapidly fell. Does the dogecoin still worthy to invest? This paper fcous on using the autoregressve integrated moving average(ARIMA) model to modeling the dogecoin price from 1st May 2021 to 23rd April 2022 to forecast the dogecion price in the next ten day. We found that the price of dogecoin fits a ARIMA(2,1,1) model, and by forecating based on this model, the price of dogecoin after 23rd April 2022 presents a downward trend.
+
+
+
+
+
+
+
+
+
+
