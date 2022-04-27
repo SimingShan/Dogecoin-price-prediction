@@ -7,7 +7,7 @@ library(astsa)
 library(aTSA)
 library(fpp2)
 library(tidyverse)
-getSymbols('DOGE-USD', from="2021-5-1", to="2022-04-23")
+getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-23")
 
 write.csv(as.data.frame(`DOGE-USD`),"inputs/data/DOGE-USD.csv")
 

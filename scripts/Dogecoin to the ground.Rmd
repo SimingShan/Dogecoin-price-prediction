@@ -21,14 +21,12 @@ last year was a big year of crypto currency because Elon Musk greatly advertise 
 
 On Elon Musk twitter, he claimed that the "dogecoin is the people's crypto", and on May 10th 2021, he claimed that SpaceX will launch satellite called "Doge-1" to the moon, thus "Doge to the moon" has become a famous meme in the crypto currency area. As a matter of fact, the doge coin did actually soar up after Elon Musk's tweets. However, after the tide of dogecoin has passed, and Elon Musk decreased his frequency of tweeting about dogecoin, the price of dogecoin rapidly fell. Does the dogecoin still worthy to invest? This paper uses the statistical programing language R[] and fucous on using the auto-regressive integrated moving average(ARIMA) model to modeling the dogecoin price from 1st May 2021 to 23rd April 2022 to forecast the dogecion price in the next ten day. The data was collected from Yahoo finance by using the function `getSymbols` from the `quantmod` package[]. In the orginal dataset, there are 358 observations with six variables each, these variables are the open price, the high price, the low price, the close price, the volume, and the adjusted price. We focus on the close price since it represents the last price during a regular trading day.
 
-ARIMA is a statistical anlysis model used to forecast time series dataset such as the unemplyment rate, stock price, or the global temperature. The ARIMA can forest a future value Based on the past values and past errors, the mathematical equation of this model can be expressed as follows:
-\[X_t = \phi_0 + \phi_1 X_{t-1}+ \phi_2 X_{t-2}+ \phi_3 X_{t-3} +...+ \phi_p X_{t-p}+\theta_0 +\theta_1 W_{t-1} +\theta_2 W_{t-2}+\theta_3 W_{t-3}+...+\theta_q W_{t-q}\]
-In the above equation, $X_t$ is the value to predict, $X_{t-1},X_{t-2},X_{t-3}...X_{t-p}$ are past values, $\phi_{p}$ are the coefficients of the past values, $W_{t-1},W_{t-2},W_{t-3}...W_{t-p}$ are past white noise errors, $\theta_{p}$ are the coefficients of the past errors.By fitting this model to oour data, We found that the price of dogecoin fits a ARIMA(2,1,1) model, and by forecating based on this model, the price of dogecoin after 23rd April 2022 will first slightly increase for one day, then decrease for nine days, the overall price of the dogecoin in the next ten days presents a downward trend. 
+ARIMA is a statistical analysis model used to forecast time series dataset such as the unemplyment rate, stock price, or the global temperature. The ARIMA can forest a future value Based on the past values and past errors, the mathematical equation of this model will be discussed in the method section. By fitting this model to oour data, We found that the price of dogecoin fits a ARIMA(2,1,1) model, and by forecating based on this model, the price of dogecoin after 23rd April 2022 will first slightly increase for one day, then decrease for nine days, the overall price of the dogecoin in the next ten days presents a downward trend. 
 
 # Data
 
 In time series analysis, the model created cannot be accurate if the sample size is too small, thus a dataset with over 100 observations is desired for modeling.
-Our dataset was collected from Yahoo finance, and it recorded the open price, the high price, the low price, the close price, the volume, and the adjusted price of dogecoin from 1st May 2021 to 23rd April 2022, and thus there are 358 observations. Since there are 358 observations in the dataset, we could build a relatively precise model if there are some underlying relationship between observations. The dogecoin was orignally released in 2013, however, we are not going to use all the observations for modeling, because the price of the dogecoin was so low for a period of time, as Figure \@ref(fig:dogewhole) shown, which may largely influence the accuracy of the model, thus we focus on the price of dogecoin from 1st May 2021 to 23rd April 2022. Based on Figure \@ref(fig:all), observed although all five different prices have different values, there trends and shapes are very similar, thus we only have to anlyze one of these price for modeling, in this case, we choose the closing price. Figure \@ref(fig:volume) shows the volume of the Dogecoin for the past 358 days, although volume could also give investors some insights of whether entering the market or not, in this paper will only focuse on the price.
+Our dataset was collected from Yahoo finance, and it recorded the open price, the high price, the low price, the close price, the volume, and the adjusted price of dogecoin from 1st May 2021 to 23rd April 2022, and thus there are 358 observations. Since there are 358 observations in the dataset, we could build a relatively precise model if there are some underlying relationship between observations. The dogecoin was orignally released in 2013, however, we are not going to use all the observations for modeling, because the price of the dogecoin was so low for a period of time, as Figure \@ref(fig:dogewhole) shown, which may largely influence the accuracy of the model, thus we focus on the price of dogecoin from 1st May 2021 to 23rd April 2022. Based on Figure \@ref(fig:all), observed although all five different prices have different values, there trends and shapes are very similar, the prices were declining rapidly from around 0.7 USD to around only 0.2 USD after May 2021, after that the prices went up and down for few times but the overall trend was decreasing. So we only have to anlyze one of these price for modeling, in this case, we choose the closing price. Figure \@ref(fig:volume) shows the volume of the Dogecoin for the past 358 days, although volume could also give investors some insights of whether entering the market or not, in this paper will only focus on the price.
 
 ```{r dogewhole, results=FALSE, echo=FALSE, message = FALSE, fig.cap="The close price of Dogecoin from 2018 to 2022",fig.dim=c(7,4)}
 library(quantmod)
@@ -94,5 +92,86 @@ ggplot(doge_all, aes(x=date,y=doge_usd_volume)) +
 
 ```
 
+# Method
 
+## ARIMA model
+Autoregressive integrated moving average model is one of the most common and useful model to predict future values based on past values and past errors. The mathematical equation of a ARIMA model can be expressed as follows:
+\[X_t = \phi_0 + \phi_1 X_{t-1}+ \phi_2 X_{t-2}+ \phi_3 X_{t-3} +...+ \phi_p X_{t-p}+\theta_0 +\theta_1 W_{t-1} +\theta_2 W_{t-2}+\theta_3 W_{t-3}+...+\theta_q W_{t-q}\]
+In the above equation, $X_t$ is the value to predict, $X_{t-1},X_{t-2},X_{t-3}...X_{t-p}$ are past values, $\phi_{p}$ are the coefficients of the past values, $W_{t-1},W_{t-2},W_{t-3}...W_{t-p}$ are past white noise errors, $\theta_{p}$ are the coefficients of the past errors.One important assumption to build a ARIMA model is that the time series data is stationary with no seasonality.  A stationary time series is defined as time series that have:
+
+  * Constant mean over time t
+  * Constant variance over time t
+  * The autocovariance function between two observations $X_{t1}$ and $X_{t2}$ only depends on the interval t1 and t2.
+  
+So before fitting model to the time series data, changing the data in to stationary without sesonality is essential, and there are generally two ways to do that. The first method is Applying difference transformation: transform each observations at time t into the difference between observation at time t and observation at time (t-1),the mathematical equation is defined as $\Delta X_t = X_t-X_{t-1}$, while the second method is applying logarithmic transformation, which takes log of each transformation.
+
+Base on Figure \@ref(fig= closeprice), an obvious trend is observed, which means this time sereis is not stationary, thus a first difference transformation was applied on the data. The Figure \@ref(fig = firtdiff) shows the price of the Dogecoin after the first difference transformation. We observed that the mean became constant over time, however, the variance is still obviously not constant over time since the plot shows a fanning pattern. Thus we applied a Box-Cox transformation to stablized the variance. The Figure \@ref(fig = boxcox) shows the price of the Dogecoin after both transformations, we observed that both mean and variance have been stablized, thus we would use this transformed data to fit a model.
+
+```{r closeprice,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "The price of the Dogecoin from May 2021 to April 2022",fig.dim=c(7,4)}
+library(quantmod)
+library(forecast)
+library(astsa)
+library(aTSA)
+library(fpp2)
+library(tidyverse)
+getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-23")
+
+close_price <- `DOGE-USD`[,4]
+
+close_price_df <- data.frame(pirce = close_price$`DOGE-USD.Close`, Date = time(close_price))
+
+close_price_df <- close_price_df %>% clean_names()
+
+ggplot(close_price_df, aes(x=date,y=doge_usd_close)) + 
+  geom_line(col = "seagreen3") +  
+  labs(title="The price of the Dogecoin from May 2021 to April 2022",
+       x = "Date",
+       y = "Price(USD)") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold",family="serif"),
+        axis.title.x = element_text(family="serif"),
+        axis.title.y = element_text(family="serif"))
+```
+
+```{r firstdiff,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "The price of the Dogecoin from May 2021 to April 2022 after difference transformation",fig.dim=c(7,4)}
+close_price_diff <- diff(close_price)
+
+close_price_df_diff <- data.frame(pirce = close_price_diff$`DOGE-USD.Close`, Date = time(close_price))
+
+close_price_df_diff <- close_price_df_diff %>% clean_names()
+
+close_price_df_diff <- close_price_df_diff[-c(1),]
+
+
+ggplot(close_price_df_diff, aes(x=date,y=doge_usd_close)) + 
+  geom_line(col="seagreen3")  +  
+  labs(title="The price of the Dogecoin from May 2021 to April 2022 after difference transformation",
+       x = "Date",
+       y = "Price(USD)") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold",family="serif"),
+        axis.title.x = element_text(family="serif"),
+        axis.title.y = element_text(family="serif"))
+
+```
+
+```{r boxcox,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "The price of the Dogecoin from May 2021 to April 2022 after difference and Box-Cox transformation ",fig.dim=c(7,4)}
+close_price_diff <- diff(close_price)
+
+trans <- diff(BoxCox(close_price,lambda = BoxCox.lambda(close_price)))
+
+trans_df <- data.frame(pirce = trans$`DOGE-USD.Close`, Date = time(close_price))
+
+trans_df <- trans_df %>% clean_names()
+
+trans_df <- trans_df[-c(1),]
+
+ggplot(trans_df, aes(x=date,y=doge_usd_close)) + 
+  geom_line(col = "seagreen") +  
+  labs(title="The price of the Dogecoin from May 2021 to April 2022 after two transformations",
+       x = "Date",
+       y = "Price(USD)") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold",family="serif"),
+        axis.title.x = element_text(family="serif"),
+        axis.title.y = element_text(family="serif"))
+
+```
 
