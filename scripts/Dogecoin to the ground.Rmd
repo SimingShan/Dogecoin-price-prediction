@@ -34,7 +34,7 @@ library(dplyr)
 library(janitor)
 library(ggplot2)
 library(ggthemes)
-getSymbols('DOGE-USD',from="2018-01-01", to="2022-04-23")
+getSymbols('DOGE-USD',from="2018-01-01", to="2022-04-26")
 doge_whole <- `DOGE-USD`
 doge_whole <- doge_whole[,4]
 doge_whole <- data.frame(close_price = doge_whole$`DOGE-USD.Close`, Date = time(doge_whole))
@@ -52,7 +52,7 @@ ggplot(doge_whole,aes(x=date,y=doge_usd_close)) +
 
 ```{r all, results=FALSE,echo=FALSE,message=FALSE,fig.cap="Five different prices of the Dogecoin from May 2021 to April 2022",fig.dim=c(7,4)}
 
-getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-23")
+getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-26")
 doge_all <- `DOGE-USD`
 doge_all <- data.frame(doge_close = doge_all$`DOGE-USD.Close`,
                        doge_open = doge_all$`DOGE-USD.Open`,
@@ -95,7 +95,7 @@ ggplot(doge_all, aes(x=date,y=doge_usd_volume)) +
 # Method
 
 ## ARIMA model
-Autoregressive integrated moving average model is one of the most common and useful model to predict future values based on past values and past errors. The mathematical equation of a ARIMA model can be expressed as follows:
+Autoregressive integrated moving average model ARIMA(p,d,q) is one of the most common and useful model to predict future values based on past values and past errors, where p represents the autoregressive order, d is the dependent order(the number of difference transformations needed), and q iis the moving average order. The mathematical equation of a ARIMA model can be expressed as follows:
 \[X_t = \phi_0 + \phi_1 X_{t-1}+ \phi_2 X_{t-2}+ \phi_3 X_{t-3} +...+ \phi_p X_{t-p}+\theta_0 +\theta_1 W_{t-1} +\theta_2 W_{t-2}+\theta_3 W_{t-3}+...+\theta_q W_{t-q}\]
 In the above equation, $X_t$ is the value to predict, $X_{t-1},X_{t-2},X_{t-3}...X_{t-p}$ are past values, $\phi_{p}$ are the coefficients of the past values, $W_{t-1},W_{t-2},W_{t-3}...W_{t-p}$ are past white noise errors, $\theta_{p}$ are the coefficients of the past errors.One important assumption to build a ARIMA model is that the time series data is stationary with no seasonality.  A stationary time series is defined as time series that have:
 
@@ -105,7 +105,7 @@ In the above equation, $X_t$ is the value to predict, $X_{t-1},X_{t-2},X_{t-3}..
   
 So before fitting model to the time series data, changing the data in to stationary without sesonality is essential, and there are generally two ways to do that. The first method is Applying difference transformation: transform each observations at time t into the difference between observation at time t and observation at time (t-1),the mathematical equation is defined as $\Delta X_t = X_t-X_{t-1}$, while the second method is applying logarithmic transformation, which takes log of each transformation.
 
-Base on Figure \@ref(fig= closeprice), an obvious trend is observed, which means this time sereis is not stationary, thus a first difference transformation was applied on the data. The Figure \@ref(fig = firtdiff) shows the price of the Dogecoin after the first difference transformation. We observed that the mean became constant over time, however, the variance is still obviously not constant over time since the plot shows a fanning pattern. Thus we applied a Box-Cox transformation to stablized the variance. The Figure \@ref(fig = boxcox) shows the price of the Dogecoin after both transformations, we observed that both mean and variance have been stablized, thus we would use this transformed data to fit a model.
+Base on Figure \@ref(fig:closeprice), an obvious trend is observed, which means this time sereis is not stationary, thus a first difference transformation was applied on the data. The Figure \@ref(fig:firtdiff) shows the price of the Dogecoin after the first difference transformation. We observed that the mean became constant over time, however, the variance is still obviously not constant over time since the plot shows a fanning pattern. Thus we applied a Box-Cox transformation to stablized the variance. The Figure \@ref(fig:boxcox) shows the price of the Dogecoin after both transformations, we observed that both mean and variance have been stablized, thus we would use this Box-Cox transformed data to fit a model. At this point, the dependent order of the ARIMA(p,d,q) model can be determined, which is d=1.
 
 ```{r closeprice,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "The price of the Dogecoin from May 2021 to April 2022",fig.dim=c(7,4)}
 library(quantmod)
@@ -114,7 +114,7 @@ library(astsa)
 library(aTSA)
 library(fpp2)
 library(tidyverse)
-getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-23")
+getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-26")
 
 close_price <- `DOGE-USD`[,4]
 
@@ -158,9 +158,17 @@ close_price_diff <- diff(close_price)
 
 trans <- diff(BoxCox(close_price,lambda = BoxCox.lambda(close_price)))
 
+box_cox_trans <- BoxCox(close_price,lambda = BoxCox.lambda(close_price))
+
+lambda <- BoxCox.lambda(close_price)
+
 trans_df <- data.frame(pirce = trans$`DOGE-USD.Close`, Date = time(close_price))
 
+boxcox_df <- data.frame(pirce = box_cox_trans$`DOGE-USD.Close`, Date = time(close_price))
+
 trans_df <- trans_df %>% clean_names()
+
+boxcox_df <- boxcox_df %>% clean_names()
 
 trans_df <- trans_df[-c(1),]
 
@@ -174,4 +182,91 @@ ggplot(trans_df, aes(x=date,y=doge_usd_close)) +
         axis.title.y = element_text(family="serif"))
 
 ```
+
+## ACF and PACF
+A Autocorrelation function (ACF) plot and a Paritial autocorrelation function (PACF) plot were used to determine the AR and MA order. Autocrrelation function calculate the correlation between one observation($X_t$) with it's lag($X_{t-h}$), while PACF also measure the correlation between $X_t$ and its lag at time t $X_{t-h}$, in addition each correlation controls for any
+correlation between observations of a shorter lag length[]. Figure \@ref(fig:acf) shows the ACF and PACF plots of the transformed time series data. The ACF plots shows a gradually declining to zero after the first lag. The PACF also shows a gradual declining to zero aftter the first lag. So the AR order of the model could be 1 or 2 since PACF is also quite large at secnd lag, and the MA order of the model could be 1 since the ACF declining raplidly after lag 1. Thus two possible model can be introduced, ARIMA(1,1,1) and ARIMA(2,1,1)
+
+```{r acf,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "TACF and PACF of the transfromed data",fig.dim=c(7,4)}
+acf2(trans,100,main="ACF and PACF of the transfromed data")
+```
+
+## Model diagnostics
+
+```{r model111,results='hide',echo=FALSE,message=FALSE,fig.cap= "Model diagnostics for ARIMA(1,1,1)",fig.dim=c(7,4)}
+model111 <- sarima(box_cox_trans,1,1,1)
+```
+AIC = 110.95 
+```{r table111,echo=FALSE,message=FALSE,tab.cap= "Table of coefficients of the ARIMA(1,1,1) model"}
+knitr::kable(model111$ttable)
+```
+
+```{r model111,results='hide',echo=FALSE,message=FALSE,fig.cap= "Model diagnostics for ARIMA(1,1,1)",fig.dim=c(7,4)}
+model211 <- sarima(box_cox_trans,2,1,1)
+```
+AIC=112.81
+```{r table211,echo=FALSE,message=FALSE,tab.cap= "Table of coefficients of the ARIMA(2,1,1) model"}
+knitr::kable(model211$ttable)
+```
+
+
+# Result
+
+```{r,include=FALSE}
+prediction <- sarima.for(box_cox_trans,10,1,1,1)
+prediction_df_box <- data.frame(prediction = prediction$pred)
+prediction_df_box <- prediction_df_box %>% 
+  mutate(date = c("2022-04-27","2022-04-28","2022-04-29","2022-04-30","2022-05-01","2022-05-02","2022-05-03","2022-05-04","2022-05-05","2022-05-06")) %>%
+  as_tibble()
+
+prediction_df_box$date <- as.Date(prediction_df_box$date)
+
+```
+
+```{r boxcoxprediction,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "Dogecoin price prediction for the next ten days",fig.dim=c(7,4)}
+
+ggplot(boxcox_df,aes(x=date,y=doge_usd_close)) +
+  geom_line(col="seagreen3") +
+  geom_line(prediction_df_box,mapping=aes(x=date,y=prediction),col="red3") +
+  labs(title = "Prediction of Dogecoin price for the next ten days",
+       x = "Date",
+       y = "Box-Cox transformed Price(USD)") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold",family="serif"),
+        axis.title.x = element_text(family="serif"),
+        axis.title.y = element_text(family="serif"))
+```
+
+Then inverse the Box-Cox price to get the actual price.
+
+```{r,include=FALSE}
+inverse = function(data, lambda){
+  original = (data * lambda + 1) ** (1/lambda)
+  return(original)
+}
+
+the_forecast = invers_BoxCox(prediction_df_box$prediction, lambda = BoxCox.lambda(close_price))
+
+the_forecast_df <- data.frame(prediction = the_forecast)
+
+the_forecast_df = the_forecast_df %>%
+  mutate(date = c("2022-04-27","2022-04-28","2022-04-29","2022-04-30","2022-05-01","2022-05-02","2022-05-03","2022-05-04","2022-05-05","2022-05-06")) %>%
+  as_tibble()
+
+the_forecast_df$date <- as.Date(the_forecast_df$date)
+```
+
+```{r prediction,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "Dogecoin price prediction for the next ten days",fig.dim=c(7,4)}
+ggplot(close_price_df,aes(x=date,y=doge_usd_close)) +
+  geom_line(col="seagreen3") +
+  geom_line(the_forecast_df,mapping=aes(x=date,y=prediction),col="red3") +
+  labs(title = "Prediction of Dogecoin price for the next ten days",
+       x = "Date",
+       y = "Price(USD)") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold",family="serif"),
+        axis.title.x = element_text(family="serif"),
+        axis.title.y = element_text(family="serif"))
+```
+
+
+
 
