@@ -3,15 +3,18 @@ title: "Dogecoin to the ground"
 subtitle: "A forecasting of the Dogecoin price "
 author: Siming Shan
 toc: TRUE
-abstract: 
+abstract: " Elon Musk, as one of the influcential men in the world, not only has huge impact on technology, but also has a huge impact on the fianancial market. Last year, Elon Musk bought a huge amount of Dogecoin(A cryptocurrency), and highly recommended it on his twitter by saying that Dogecoin is people's cryptocurrency, and because of that the price of Doogecoin soared up in a dramaticly speed last year. Hwever, one year later, is Dogecoin still worth inveseting? In this paper, we focus on building an ARIMA model to fit the Dogecoin price data, and then predict the price for the next ten days. We found that the Dogecoin price fits an ARIMA(1,1,1) model, and by using this model we predict that the price of Dogecin will keep decreasing for the next ten days.
+ \\par
+ \\textbf {keywords:} Elon Musk, Bogecoin, ARIMA, Finance, Prediction, Cryptocurrency "
 output:
   bookdown::pdf_document2:
     fig_caption: yes
+    tab_caption: yes
     number_sections: yes
+    extra_dependencies: ["float"]
 ---
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.pos = "H", out.extra = "")
 ```
 
 # Introduction:
@@ -25,10 +28,13 @@ ARIMA is a statistical analysis model used to forecast time series dataset such 
 
 # Data
 
+## Time series data introduction
 In time series analysis, the model created cannot be accurate if the sample size is too small, thus a dataset with over 100 observations is desired for modeling.
 Our dataset was collected from Yahoo finance, and it recorded the open price, the high price, the low price, the close price, the volume, and the adjusted price of dogecoin from 1st May 2021 to 23rd April 2022, and thus there are 358 observations. Since there are 358 observations in the dataset, we could build a relatively precise model if there are some underlying relationship between observations. The dogecoin was orignally released in 2013, however, we are not going to use all the observations for modeling, because the price of the dogecoin was so low for a period of time, as Figure \@ref(fig:dogewhole) shown, which may largely influence the accuracy of the model, thus we focus on the price of dogecoin from 1st May 2021 to 23rd April 2022. Based on Figure \@ref(fig:all), observed although all five different prices have different values, there trends and shapes are very similar, the prices were declining rapidly from around 0.7 USD to around only 0.2 USD after May 2021, after that the prices went up and down for few times but the overall trend was decreasing. So we only have to anlyze one of these price for modeling, in this case, we choose the closing price. Figure \@ref(fig:volume) shows the volume of the Dogecoin for the past 358 days, although volume could also give investors some insights of whether entering the market or not, in this paper will only focus on the price.
 
-```{r dogewhole, results=FALSE, echo=FALSE, message = FALSE, fig.cap="The close price of Dogecoin from 2018 to 2022",fig.dim=c(7,4)}
+## Data visualization
+
+```{r dogewhole, results=FALSE, echo=FALSE, message = FALSE, fig.cap="The close price of Dogecoin from 2018 to 2022",fig.dim=c(7,3)}
 library(quantmod)
 library(dplyr)
 library(janitor)
@@ -105,7 +111,7 @@ In the above equation, $X_t$ is the value to predict, $X_{t-1},X_{t-2},X_{t-3}..
   
 So before fitting model to the time series data, changing the data in to stationary without sesonality is essential, and there are generally two ways to do that. The first method is Applying difference transformation: transform each observations at time t into the difference between observation at time t and observation at time (t-1),the mathematical equation is defined as $\Delta X_t = X_t-X_{t-1}$, while the second method is applying logarithmic transformation, which takes log of each transformation.
 
-Base on Figure \@ref(fig:closeprice), an obvious trend is observed, which means this time sereis is not stationary, thus a first difference transformation was applied on the data. The Figure \@ref(fig:firtdiff) shows the price of the Dogecoin after the first difference transformation. We observed that the mean became constant over time, however, the variance is still obviously not constant over time since the plot shows a fanning pattern. Thus we applied a Box-Cox transformation to stablized the variance. The Figure \@ref(fig:boxcox) shows the price of the Dogecoin after both transformations, we observed that both mean and variance have been stablized, thus we would use this Box-Cox transformed data to fit a model. At this point, the dependent order of the ARIMA(p,d,q) model can be determined, which is d=1.
+Base on Figure \@ref(fig:closeprice), an obvious trend is observed, which means this time sereis is not stationary, thus a first difference transformation was applied on the data. The Figure \@ref(fig:firstdiff) shows the price of the Dogecoin after the first difference transformation. We observed that the mean became constant over time, however, the variance is still obviously not constant over time since the plot shows a fanning pattern. Thus we applied a Box-Cox transformation to stablized the variance. The Figure \@ref(fig:boxcox) shows the price of the Dogecoin after both transformations, we observed that both mean and variance have been stablized, thus we would use this Box-Cox transformed data to fit a model. At this point, the dependent order of the ARIMA(p,d,q) model can be determined, which is d=1.
 
 ```{r closeprice,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "The price of the Dogecoin from May 2021 to April 2022",fig.dim=c(7,4)}
 library(quantmod)
@@ -192,26 +198,57 @@ acf2(trans,100,main="ACF and PACF of the transfromed data")
 ```
 
 ## Model diagnostics
+For model diagnostics, as Figure \@ref(fig:model111) and Figure \@ref(fig:model211) shown, we plot a residual plot, a ACF of residual plot, a normal-QQ plot, and a Ljung-Box statistic plot to examine wheter the model has violated any model assumptions or not. Then we compare the Akaike information criterion (AIC) of each plots, finally, we compare the significance of their coefficients to find the best fit model.
 
-```{r model111,results='hide',echo=FALSE,message=FALSE,fig.cap= "Model diagnostics for ARIMA(1,1,1)",fig.dim=c(7,4)}
+### Model assumptions
+A good model should not violate any of the model assumptions like normality, independecy, and randomness. We can use a standard residual plot and ACF residual plot to determine wheter the model vioolate the randomness assumption. Use Normal Q-Q plot to determine whether the model violate the normal assumption, and use Ljung-Box statistics plot to determine whether the model violate the independent assumption. Figure \@ref(fig:model111) and Figure \@ref(fig:model211) shows the necessary model assumptions of two models.
+
+```{r model111,results='hide',echo=FALSE,fig.cap= "Model diagnostics for ARIMA(1,1,1)",fig.dim=c(7,4)}
 model111 <- sarima(box_cox_trans,1,1,1)
 ```
-AIC = 110.95 
-```{r table111,echo=FALSE,message=FALSE,tab.cap= "Table of coefficients of the ARIMA(1,1,1) model"}
-knitr::kable(model111$ttable)
-```
 
-```{r model111,results='hide',echo=FALSE,message=FALSE,fig.cap= "Model diagnostics for ARIMA(1,1,1)",fig.dim=c(7,4)}
+```{r model211,results='hide',echo=FALSE,fig.cap= "Model diagnostics for ARIMA(2,1,1)",fig.dim=c(7,4)}
+
 model211 <- sarima(box_cox_trans,2,1,1)
 ```
-AIC=112.81
-```{r table211,echo=FALSE,message=FALSE,tab.cap= "Table of coefficients of the ARIMA(2,1,1) model"}
+
+### AIC
+Akaike information criterion (AIC) is a statistical tool to examine how a model fit the data, and the model's simpilicity, and it has been widely used to compare different model for selecting the best model[]. The lower AIC, the better the model fits the data. The AIC of ARIMA(1,1,1) is 110.95 and ARIMA(2,1,1) model is 112.81.
+
+### Parameters significance
+To test the significance of the parameter we set a null hypothesis and a alternative hypothesis as follow:
+
+  * null hypothesis $H_0$ :the coefficients of the parameters are not significant different from 0
+  
+  * alternative hypothesis $H_A$:the coefficients of the parameters are significant different from 0
+  
+Below tables shows the coefficients of each parameters and their p-value.
+
+```{r,echo=FALSE,message=FALSE}
+knitr::kable(model111$ttable) 
+```
+
+```{r,echo=FALSE,message=FALSE}
+
 knitr::kable(model211$ttable)
+
 ```
 
 
 # Result
 
+## ARIMA(1,1,1)
+
+Figure \@ref(fig:model111) is the model diagnostic plots for the ARIMA(1,1,1) model, we observed that the standard residuals shows no obvious patterns, and there are no outliers. The ACF Residuals plot shows only one spike. Hence, we conclude that there are no violations of the model randomness assumption. In addition, there are no heavy tails on both ends of the Normal Q-Q Plot of Residuals, it supports that there are no apparent violations of the model normality assumption. Besides, all the p-values for Ljung-Box statistics are above the significant level, so there is no violation of the model independent assumption. So no model assumptions are violated. The ARIMA(1,1,1) model is a valid model with a Akaike information criterion (AIC) of 110.95.
+
+Figure \@ref(fig:model211) is the model diagnostic plots for the ARIMA(1,1,1) model, we observed that the standard residuals shows no obvious patterns, and there are no outliers. The ACF Residuals plot shows only one spike. Hence, we conclude that there are no violations of the model randomness assumption. In addition, there are no heavy tails on both ends of the Normal Q-Q Plot of Residuals, it supports that there are no apparent violations of the model normality assumption. Besides, all the p-values for Ljung-Box statistics are above the significant level, so there is no violation of the model independent assumption. So no model assumptions are violated. The ARIMA(1,1,1) model is a valid model with a Akaike information criterion (AIC) of 112.81.
+
+So both models did not violate any model assumptions. However, ARIMA(1,1,1) has a smaller AIC(110.95) than ARIMA(2,1,1) which has a AIC of 112.81. Thus from the AIC perspective, ARIMA(1,1,1) is the better model which may fit better to the data, and has more simplicity. In addition, the parameter tables suggest that parameter of ARIMA(1,1,1) has p-values of 0.0741 and 0.0103, thus we have no evidence to reject our null hypothesis, thus all the parameters in ARIMA(1,1,1) are significant. On the other hand, the parameters of ARIMA(2,1,1) has p-values of 0.0454,0.6974, and 0.0112 respectively, while the first AR and MA parameters has small p-values, the second AR parameter has a p-value that is larger than 0.5, which means we can not reject the null hypothesis, so the second AR parameter in the ARIMA(2,1,1) model is not significant.
+
+So in general, we found the ARIMA(1,1,1) is the better model to fit the time series.
+
+## Predicting the future price
+Then we use the ARIMA(1,1,1) with $\phi=0.4945$ and $\theta=-0.6375$ to predict the price of Dogecoin for the next ten days. Figure \@ref(fig:boxcoxprediction) visualize our prediction, however since we Box-Cox transformed our data in previously, the value of prediction has also been Box-Cox transformed.
 ```{r,include=FALSE}
 prediction <- sarima.for(box_cox_trans,10,1,1,1)
 prediction_df_box <- data.frame(prediction = prediction$pred)
@@ -222,6 +259,7 @@ prediction_df_box <- prediction_df_box %>%
 prediction_df_box$date <- as.Date(prediction_df_box$date)
 
 ```
+
 
 ```{r boxcoxprediction,results=FALSE,echo=FALSE,message=FALSE,fig.cap= "Dogecoin price prediction for the next ten days",fig.dim=c(7,4)}
 
@@ -236,15 +274,17 @@ ggplot(boxcox_df,aes(x=date,y=doge_usd_close)) +
         axis.title.y = element_text(family="serif"))
 ```
 
-Then inverse the Box-Cox price to get the actual price.
+
+We calculate the acutal predicted price which has not been Box-Cox transformed by doing a inverse Box-Cox transformation. Figure \@ref(fig:prediction) shows the actual prediction of the Dogecoin price in the next ten days as from 26th April 2022. We observed that the price will be continuously decreasing for the next ten days.
 
 ```{r,include=FALSE}
+
 inverse = function(data, lambda){
   original = (data * lambda + 1) ** (1/lambda)
   return(original)
 }
 
-the_forecast = invers_BoxCox(prediction_df_box$prediction, lambda = BoxCox.lambda(close_price))
+the_forecast = inverse(prediction_df_box$prediction, lambda = BoxCox.lambda(close_price))
 
 the_forecast_df <- data.frame(prediction = the_forecast)
 
@@ -265,7 +305,23 @@ ggplot(close_price_df,aes(x=date,y=doge_usd_close)) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold",family="serif"),
         axis.title.x = element_text(family="serif"),
         axis.title.y = element_text(family="serif"))
+
 ```
+
+# Disscussion
+
+## Conclusion
+We found that a ARIMA(1,1,1) model with coefficient $\phi=0.4945$ and $\theta=-0.6375$ can fit the Dogecoin data from May 2021 to Apirl 2022, then if we apply this model topredict the future price of the Dogecoin we can find that the price will be coninously decreasing for the next ten days. So for investors who are looking for investment opptunuities, investing in Dogecoin may be a bad choice. In addition, the decreasing trend may also imply that Elon Musk is losing his interest in the Dogecoin and crptocurrency.
+
+## "All models are wrong"
+A famous British statistican George E. P. Box once said "All models are wrong, but some are useful"[]. Since Dogecoin is highly volatile cryptocurrecy, its price could may be influenced by many things like government policy, financial influencer's involment, and so on, in some cases, a cryptocurrency may be soaring today, and disappear tomorrow. So our model certainly can not predict the actual future value of the Dogecoin, however the prediction can show investors some insights about the overall trend of the price to help them decide whether to invest it or not. 
+
+## Next step
+Except for the fact that cryptocurrency is naturally hard to predict, in our data, we only have useful 361 observations, in some cases, 361 observations is enough for a data to build a decent model, however, for financial prediction the more useful observattions the better. So for the next step, I will continue monitoring the Dogecoin price to see if the actual price match our prediction, if not, I will try to build another model to fit the data.
+
+## Relevent research
+I think antoher research which focuses on the building the relationship between the number of Elon Musk's tweets about Dogecoin and the price of the Dogecoin could be made, to see if there is actually a relationship between them, if so, how can we use this relationship to predict the Dogecoin price and make investment advice.
+
 
 
 

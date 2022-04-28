@@ -7,7 +7,7 @@ library(astsa)
 library(aTSA)
 library(fpp2)
 library(tidyverse)
-getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-23")
+getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-26")
 
 write.csv(as.data.frame(`DOGE-USD`),"inputs/data/DOGE-USD.csv")
 
@@ -29,6 +29,10 @@ model <- auto.arima(trans)
 
 model
 
+acf2(diff(trans))
+
+Box.test(diff(trans))
+
 sarima(trans,2,1,1)
 df <- forecast::forecast(model,10)
 
@@ -38,7 +42,7 @@ predictions <- forecast::forecast(model,10)
 
 predictions
 
-sarima.for(trans,10,2,1,0)
+sarima.for(trans,10,1,1,1)
 
 invers_BoxCox = function(ts_data, lambda){
   original_ts = (ts_data * lambda + 1) ** (1/lambda)
@@ -54,8 +58,8 @@ the_forecast = invers_BoxCox(forecast_df, lambda = BoxCox.lambda(close_price))
 the_forecast
 
 the_forecast = the_forecast %>%
-  mutate(Date = c("2022-04-24","2022-04-25","2022-04-26","2022-04-27","2022-04-28",
-                  "2022-04-29","2022-04-30","2022-05-01","2022-05-02","2022-05-03")) %>%
+  mutate(Date = c("2022-04-27","2022-04-28","2022-04-29","2022-04-30","2022-05-01",
+                  "2022-05-02","2022-05-03","2022-05-04","2022-05-05","2022-05-06")) %>%
   as_tibble()
 
 the_forecast$Date <- as.Date(the_forecast$Date)
