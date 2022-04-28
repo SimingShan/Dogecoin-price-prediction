@@ -5,11 +5,14 @@
 # Contact: siming.shan@mail.utoronto.ca
 # License: MIT
 
+### workplace setup ###
 library(quantmod)
 library(dplyr)
 library(janitor)
 library(ggplot2)
 library(ggthemes)
+
+### Get the dataset ###
 getSymbols('DOGE-USD',from="2018-01-01", to="2022-04-26")
 doge_whole <- `DOGE-USD`
 doge_whole <- doge_whole[,4]

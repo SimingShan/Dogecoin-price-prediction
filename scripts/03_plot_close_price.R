@@ -5,12 +5,14 @@
 # Contact: siming.shan@mail.utoronto.ca
 # License: MIT
 
+### workplace setup ###
 library(quantmod)
 library(forecast)
 library(astsa)
 library(aTSA)
 library(fpp2)
 library(tidyverse)
+
 getSymbols('DOGE-USD', from="2021-05-01", to="2022-04-26")
 
 close_price <- `DOGE-USD`[,4]
